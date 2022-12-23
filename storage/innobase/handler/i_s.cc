@@ -111,7 +111,7 @@ constexpr auto I_S_PAGE_TYPE_LAST = I_S_PAGE_TYPE_SDI;
 
 constexpr auto I_S_PAGE_TYPE_BITS = 6;
 
-/** I_S.innodb_* views version postfix. Everytime the define of any InnoDB I_S
+/** I_S.innodb_* views version postfix. Every time the define of any InnoDB I_S
 table is changed, this value has to be increased accordingly */
 constexpr uint8_t i_s_innodb_plugin_version_postfix = 2;
 
@@ -343,7 +343,7 @@ static int field_store_index_name(
   ut_ad(index_name != nullptr);
   ut_ad(field->real_type() == MYSQL_TYPE_VARCHAR);
 
-  /* Since TEMP_INDEX_PREFIX is not a valid UTF8, we need to convert
+  /* Since TEMP_INDEX_PREFIX is not a valid UTF8MB3, we need to convert
   it to something else. */
   if (*index_name == *TEMP_INDEX_PREFIX_STR) {
     char buf[NAME_LEN + 1];
@@ -759,7 +759,6 @@ static int trx_i_s_common_fill_table(
     Item *)             /*!< in: condition (not used) */
 {
   const char *table_name;
-  int ret;
   trx_i_s_cache_t *cache;
 
   DBUG_TRACE;
@@ -789,15 +788,10 @@ static int trx_i_s_common_fill_table(
                             << TRX_I_S_MEM_LIMIT << " bytes";
   }
 
-  ret = 0;
-
   trx_i_s_cache_start_read(cache);
 
   if (innobase_strcasecmp(table_name, "innodb_trx") == 0) {
-    if (fill_innodb_trx_from_cache(cache, thd, tables->table) != 0) {
-      ret = 1;
-    }
-
+    fill_innodb_trx_from_cache(cache, thd, tables->table);
   } else {
     ib::error(ER_IB_MSG_600) << "trx_i_s_common_fill_table() was"
                                 " called to fill unknown table: "
@@ -806,22 +800,15 @@ static int trx_i_s_common_fill_table(
                                 " This function only knows how to fill"
                                 " innodb_trx, innodb_locks and"
                                 " innodb_lock_waits tables.";
-
-    ret = 1;
   }
 
   trx_i_s_cache_end_read(cache);
 
-#if 0
-        return ret;
-#else
   /* if this function returns something else than 0 then a
   deadlock occurs between the mysqld server and mysql client,
   see http://bugs.mysql.com/29900 ; when that bug is resolved
   we can enable the return ret above */
-  ret++;  // silence a gcc46 warning
   return 0;
-#endif
 }
 
 /* Fields of the dynamic table information_schema.innodb_cmp.
@@ -1191,14 +1178,14 @@ static int i_s_cmp_per_index_fill_low(
       if (dict_index_is_sdi(index)) {
         continue;
       }
-      char db_utf8[dict_name::MAX_DB_UTF8_LEN];
-      char table_utf8[dict_name::MAX_TABLE_UTF8_LEN];
+      char db_utf8mb3[dict_name::MAX_DB_UTF8MB3_LEN];
+      char table_utf8mb3[dict_name::MAX_TABLE_UTF8MB3_LEN];
 
-      dict_fs2utf8(index->table_name, db_utf8, sizeof(db_utf8), table_utf8,
-                   sizeof(table_utf8));
+      dict_fs2utf8(index->table_name, db_utf8mb3, sizeof(db_utf8mb3),
+                   table_utf8mb3, sizeof(table_utf8mb3));
 
-      field_store_string(fields[IDX_DATABASE_NAME], db_utf8);
-      field_store_string(fields[IDX_TABLE_NAME], table_utf8);
+      field_store_string(fields[IDX_DATABASE_NAME], db_utf8mb3);
+      field_store_string(fields[IDX_TABLE_NAME], table_utf8mb3);
       field_store_index_name(fields[IDX_INDEX_NAME], index->name);
     } else {
       /* index not found */
@@ -3513,12 +3500,12 @@ static void innodb_temp_table_populate_cache(const dict_table_t *table,
                                              temp_table_info_t *cache) {
   cache->m_table_id = table->id;
 
-  char db_utf8[dict_name::MAX_DB_UTF8_LEN];
-  char table_utf8[dict_name::MAX_TABLE_UTF8_LEN];
+  char db_utf8mb3[dict_name::MAX_DB_UTF8MB3_LEN];
+  char table_utf8mb3[dict_name::MAX_TABLE_UTF8MB3_LEN];
 
-  dict_fs2utf8(table->name.m_name, db_utf8, sizeof(db_utf8), table_utf8,
-               sizeof(table_utf8));
-  strcpy(cache->m_table_name, table_utf8);
+  dict_fs2utf8(table->name.m_name, db_utf8mb3, sizeof(db_utf8mb3),
+               table_utf8mb3, sizeof(table_utf8mb3));
+  strcpy(cache->m_table_name, table_utf8mb3);
 
   cache->m_n_cols = table->n_cols;
 
