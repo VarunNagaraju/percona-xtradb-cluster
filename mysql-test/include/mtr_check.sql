@@ -110,15 +110,9 @@ BEGIN
 
   -- Dump all global variables except those that may change.
   -- timestamp changes if time passes. server_uuid changes if server restarts.
-<<<<<<< HEAD
   -- wsrep_start_position can change on mysqldump SST
   -- auto_increment_offset can change on cluster reconfigurations
-  SELECT * FROM performance_schema.global_variables
-||||||| 7e301439b65
-  SELECT * FROM performance_schema.global_variables
-=======
   SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ * FROM performance_schema.global_variables
->>>>>>> ps/release-8.0.31-23
     WHERE variable_name NOT IN ('timestamp', 'server_uuid',
                                 'gtid_executed', 'gtid_purged',
                                 'group_replication_group_name',
@@ -139,16 +133,10 @@ BEGIN
 
   -- Dump all databases, there should be none
   -- except those that was created during bootstrap
-<<<<<<< HEAD
   -- and the mtr_wsrep_notify schema which is populated by the std_data/wsrep_notify.sh script
   -- and the suite/galera/t/galera_var_notify_cmd.test
   -- and the wsrep_schema schema that may be created by Galera
-  SELECT * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('mtr_wsrep_notify', 'wsrep_schema') ORDER BY SCHEMA_NAME;
-||||||| 7e301439b65
-  SELECT * FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME;
-=======
-  SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ * FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME;
->>>>>>> ps/release-8.0.31-23
+  SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ * FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('mtr_wsrep_notify', 'wsrep_schema') ORDER BY SCHEMA_NAME;
 
   -- Dump all tablespaces, there should be none
   SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ FILE_NAME, FILE_TYPE, TABLESPACE_NAME, ENGINE FROM INFORMATION_SCHEMA.FILES
@@ -197,13 +185,7 @@ BEGIN
     FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA != 'sys' ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE;
 
   -- Dump all views, only those in the sys schema should exist
-<<<<<<< HEAD
-  SELECT * FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA != 'sys'
-||||||| 7e301439b65
-  SELECT * FROM INFORMATION_SCHEMA.VIEWS
-=======
-  SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ * FROM INFORMATION_SCHEMA.VIEWS
->>>>>>> ps/release-8.0.31-23
+  SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ * FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA != 'sys'
     ORDER BY TABLE_SCHEMA, TABLE_NAME;
 
   -- Dump all plugins, loaded with plugin-loading options or through
@@ -230,7 +212,6 @@ BEGIN
   --
   -- For "unauthenticated user", see Bug#30035699 "UNAUTHENTICATED USER" SHOWS UP IN CHECK-TESTCASE
   --
-<<<<<<< HEAD
   -- SELECT USER, HOST, DB, COMMAND, INFO FROM INFORMATION_SCHEMA.PROCESSLIST
   --   WHERE COMMAND NOT IN ('Sleep')
   --    AND USER NOT IN ('unauthenticated user','mysql.session', 'event_scheduler')
@@ -262,17 +243,6 @@ BEGIN
   DELETE FROM mysql.global_grants WHERE user = 'mysql.pxc.sst.user';
   COMMIT;
   SET SESSION wsrep_on = ON;
-||||||| 7e301439b65
-  SELECT USER, HOST, DB, COMMAND, INFO FROM INFORMATION_SCHEMA.PROCESSLIST
-    WHERE COMMAND NOT IN ('Sleep')
-      AND USER NOT IN ('unauthenticated user','mysql.session', 'event_scheduler')
-        ORDER BY COMMAND;
-=======
-  SELECT /*+SET_VAR(use_secondary_engine=OFF)*/ USER, HOST, DB, COMMAND, INFO FROM INFORMATION_SCHEMA.PROCESSLIST
-    WHERE COMMAND NOT IN ('Sleep')
-      AND USER NOT IN ('unauthenticated user','mysql.session', 'event_scheduler')
-        ORDER BY COMMAND;
->>>>>>> ps/release-8.0.31-23
 
   -- Checksum system tables to make sure they have been properly
   -- restored after test.
