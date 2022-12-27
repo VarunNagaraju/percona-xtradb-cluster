@@ -153,7 +153,7 @@ bool Ndb_local_connection::execute_query_iso(const std::string &sql_query,
       "Mismatched type for variable used to save option_bits");
   m_thd->variables.option_bits &= ~OPTION_BIN_LOG;
 #ifdef WITH_WSREP
-  thd->variables.option_bits |= OPTION_BIN_LOG_INTERNAL_OFF;
+  m_thd->variables.option_bits |= OPTION_BIN_LOG_INTERNAL_OFF;
 #endif
 
   /*
