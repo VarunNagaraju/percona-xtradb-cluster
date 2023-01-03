@@ -226,6 +226,6 @@
     Added column FLAGS in table setup_instruments
 */
 
-static const uint PFS_DD_VERSION = 80030;
+static const uint PFS_DD_VERSION = 80031;
 
 #endif /* PFS_DD_VERSION_H */
